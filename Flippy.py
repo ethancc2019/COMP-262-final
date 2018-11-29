@@ -49,6 +49,7 @@ def make_threads():
 if __name__ == "__main__":
 
     probability = compute_probability()
+    print("Initial probability of landing on the sequence: " + str(probability))
     actualProb = 0
     while flag != 0:
         # then = time.time()
@@ -58,12 +59,12 @@ if __name__ == "__main__":
 
         print("Actual flip = " + flip + " Ideal flip = " + idealFlip)
         if counter != 0:
-            actualProb = probability / counter
+            actualProb = (probability / counter)
         if flip == idealFlip:
             # now = time.time()
             flag = 0
 
-        print("iteration number: " + str(counter) + " Probability: " + str(actualProb / 100))
+        print("iteration number: " + str(counter) + " Probability: " + str(actualProb))
 
         counter += 1
         flip = ""
