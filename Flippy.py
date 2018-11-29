@@ -35,6 +35,9 @@ def compute_probability():
     size = len(idealFlip)
     print("do something damnit")
 
+def new_function():
+
+
 
 # make number of threads based on the length of the ideal flip
 def make_threads():
