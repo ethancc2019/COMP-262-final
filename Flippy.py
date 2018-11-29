@@ -12,17 +12,22 @@
 # sequence to occur about once for every 1000 repeats of the experiment of flipping a
 # coin 10 times. So if we repeat the experiment 10,000 times, then we expect to get this
 # particular sequence about 10 times.
+#
+# intuition behind coin flipping
+# https://math.stackexchange.com/questions/151262/looking-for-intuition-behind-coin-flipping-pattern-expectation
 
 import random
 import time
+import math
 from multiprocessing.dummy import Pool as ThreadPool
 
 coinChoices = ["H", "T"]
 # number of flips
-idealFlip = "HHTHTHHHTHHHTHTH"
-actualFlip = ""
+idealFlip = "HHTHTTHT"
 counter = 0
 flag = 1
+probability = 0
+flip = ""
 
 
 # pool = ThreadPool(4)
@@ -33,10 +38,7 @@ def flip_coin(coins):
 
 def compute_probability():
     size = len(idealFlip)
-    print("do something damnit")
-
-def new_function():
-
+    return math.pow(0.5, size)
 
 
 # make number of threads based on the length of the ideal flip
@@ -44,23 +46,28 @@ def make_threads():
     pool = ThreadPool(len(idealFlip))
 
 
-while flag != 0:
-    # then = time.time()
-    for i in range(len(idealFlip)):
-        # Each iteration represents a independent flip of the coin
-        actualFlip += flip_coin(coinChoices)
+if __name__ == "__main__":
 
-    print("Actual flip = " + actualFlip + " Ideal flip = " + idealFlip)
+    probability = compute_probability()
+    actualProb = 0
+    while flag != 0:
+        # then = time.time()
+        for i in range(len(idealFlip)):
+            # Each iteration represents a independent flip of the coin
+            flip += flip_coin(coinChoices)
 
-    if actualFlip == idealFlip:
-        # now = time.time()
-        flag = 0
+        print("Actual flip = " + flip + " Ideal flip = " + idealFlip)
+        if counter != 0:
+            actualProb = probability / counter
+        if flip == idealFlip:
+            # now = time.time()
+            flag = 0
 
-    counter += 1
-    actualFlip = ""
+        print("iteration number: " + str(counter) + " Probability: " + str(actualProb / 100))
 
-# diff = now - then
-# print(str(diff % 60))
-print("FOUND ON ITERATION: " + str(counter))
+        counter += 1
+        flip = ""
 
-
+    # diff = now - then
+    # print(str(diff % 60))
+    print("FOUND ON ITERATION: " + str(counter))
