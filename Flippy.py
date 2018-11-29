@@ -12,6 +12,9 @@
 # sequence to occur about once for every 1000 repeats of the experiment of flipping a
 # coin 10 times. So if we repeat the experiment 10,000 times, then we expect to get this
 # particular sequence about 10 times.
+#
+# intuition behind coin flipping
+# https://math.stackexchange.com/questions/151262/looking-for-intuition-behind-coin-flipping-pattern-expectation
 
 import random
 import time
