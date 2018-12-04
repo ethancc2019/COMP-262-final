@@ -1,3 +1,12 @@
+# Ethan Collins
+# Tai Alvitre
+# 12/3/18
+#
+# Finish implementing multiprocessing in python.  Optimize code.
+#
+
+# References / Resources
+#
 # coding=utf-8
 # Math is being cited from this website:
 # http://math.ucr.edu/home/baez/games/games_9.html
@@ -46,6 +55,7 @@ flag = 1            # exit token
 
 # pool = ThreadPool(4)
 
+
 # flips a coin
 def flip_coin(coins):
     return str(random.choice(coins))
@@ -67,6 +77,7 @@ def make_threads():
     pool = ThreadPool(len(idealFlip))
 
 
+# TODO: implement multiprocessing
 if __name__ == "__main__":
 
     probability = compute_probability()
