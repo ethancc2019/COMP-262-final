@@ -16,9 +16,8 @@
 # intuition behind coin flipping
 # https://math.stackexchange.com/questions/151262/looking-for-intuition-behind-coin-flipping-pattern-expectation
 
-#Asked the question on a forum and got a decent good answer
-# https://math.stackexchange.com/questions/3024894/how-to-compute-the-empirical-probability-of-a-coin-landing-on-a-specific-sequenc?noredirect=1#comment6237217_3024894
 
+# https://en.wikipedia.org/wiki/Binomial_distribution
 # OMG WE NEED TO USE PROBABILITY MASS FUNCTION WHATTTT
 # Probability mass function --> https://en.wikipedia.org/wiki/Binomial_distribution
 # The probability of getting exactly k successes(in our case just one) in n trials is given by the probability mass function:
