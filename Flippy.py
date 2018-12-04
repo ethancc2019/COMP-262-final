@@ -31,18 +31,18 @@ import time
 import math
 from multiprocessing.dummy import Pool as ThreadPool
 
-coinChoices = ["H", "T"]
 # initial sequence:
 # HHTHTHHHTHHHTHTH
-idealFlip = "HHTHTHHHTHHHTHTH"
-counter = 0
-flag = 1
-probability = 0
-flip = ""
-num_matches = 0.0
-# accuracy
-margin_error = 0.1
 
+coinChoices = ["H", "T"]  # choices
+idealFlip = "HHTHTHHH"    # string to match
+flip = ""                 # resets flip
+
+margin_error = 0.1  # accuracy
+num_matches = 0.0   # matched strings
+probability = 0     # calc. probability
+counter = 0         # iterations
+flag = 1            # exit token
 
 # pool = ThreadPool(4)
 
@@ -57,6 +57,7 @@ def compute_probability():
     return math.pow(0.5, size)
 
 
+# actual probability
 def empirical_probability(count, num_flips):
     return count / num_flips
 
@@ -69,7 +70,7 @@ def make_threads():
 if __name__ == "__main__":
 
     probability = compute_probability()
-    print("Initial probability of landing on the sequence: " + str(probability))
+    print("\nInitial probability of landing on the sequence: " + str(probability) + "\n")
 
     actualProb = 0
     empiricalProb = 0
@@ -91,10 +92,6 @@ if __name__ == "__main__":
         # found a match
         if flip == idealFlip:
             # now = time.time()
-
-            #    changed to continue flipping of coins
-            # flag = 0
-
             num_matches += 1
             print("FOUND ON ITERATION: " + str(counter))
             actualProb = 0  # reset after found
@@ -104,7 +101,7 @@ if __name__ == "__main__":
         # print("iteration number: " + str(counter))  # + " Probability: " + str(actualProb))
         # print("calculated probability: " + str(probability))
         # print("cumulative probability: " + str(actualProb))
-        # print("empirical probability:  " + str(empiricalProb))
+        print("empirical probability:  " + str(empiricalProb))
 
         counter += 1
         flip = ""
@@ -114,6 +111,7 @@ if __name__ == "__main__":
             flag = 0
             # now = time.clock()
 
+    # results
     print("\nDONE ON ITERATION:     " + str(counter))
     print("EMPIRICAL PROBABILITY: " + str(empirical_probability(num_matches, counter)))
     print("EXPECTED PROBABILITY:  " + str(compute_probability()))
