@@ -16,18 +16,25 @@
 # intuition behind coin flipping
 # https://math.stackexchange.com/questions/151262/looking-for-intuition-behind-coin-flipping-pattern-expectation
 
+#Asked the question on a forum and got a decent good answer
+# https://math.stackexchange.com/questions/3024894/how-to-compute-the-empirical-probability-of-a-coin-landing-on-a-specific-sequenc?noredirect=1#comment6237217_3024894
+
 import random
 import time
 import math
-from multiprocessing.dummy import Pool as ThreadPool
+import threading
 
+# ***Global Variables***
 coinChoices = ["H", "T"]
-# number of flips
-idealFlip = "HHTHTTHT"
-counter = 0
-flag = 1
-probability = 0
+idealFlip = "HHTHTHHHTHHHTHTH"
 flip = ""
+
+counter = 0  # keep track of the iterations to divide by
+flag = 1  # flag to break the while loop
+probability = 0
+
+numOfHeads = 0
+numOfTails = 0
 
 
 # pool = ThreadPool(4)
@@ -36,23 +43,31 @@ def flip_coin(coins):
     return str(random.choice(coins))
 
 
-def compute_probability():
+def compute_probability():  # This function assumes that the probability of H or T is 1/2
+    global idealFlip
     size = len(idealFlip)
     return math.pow(0.5, size)
 
 
+def count_occurrence():  # Counts the number of H and T in the sequence
+    global numOfHeads
+    global numOfTails
+    for i in idealFlip:
+        if i == "H":
+            numOfHeads += 1
+        else:
+            numOfTails += 1
+
+
 # make number of threads based on the length of the ideal flip
-def make_threads():
-    pool = ThreadPool(len(idealFlip))
 
 
 if __name__ == "__main__":
-
-    probability = compute_probability()
+    count_occurrence()
     print("Initial probability of landing on the sequence: " + str(probability))
     actualProb = 0
+    probability = compute_probability()
     while flag != 0:
-        # then = time.time()
         for i in range(len(idealFlip)):
             # Each iteration represents a independent flip of the coin
             flip += flip_coin(coinChoices)
@@ -61,12 +76,12 @@ if __name__ == "__main__":
         if counter != 0:
             actualProb = (probability / counter)
         if flip == idealFlip:
-            # now = time.time()
             flag = 0
 
-        print("iteration number: " + str(counter) + " Probability: " + str(actualProb))
+        print("Iteration number: " + str(counter) + " Probability on this iteration: " + str(actualProb))
 
         counter += 1
+        # reset this string
         flip = ""
 
     # diff = now - then
