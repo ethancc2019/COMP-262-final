@@ -19,14 +19,22 @@
 #Asked the question on a forum and got a decent good answer
 # https://math.stackexchange.com/questions/3024894/how-to-compute-the-empirical-probability-of-a-coin-landing-on-a-specific-sequenc?noredirect=1#comment6237217_3024894
 
+# OMG WE NEED TO USE PROBABILITY MASS FUNCTION WHATTTT
+# Probability mass function --> https://en.wikipedia.org/wiki/Binomial_distribution
+# The probability of getting exactly k successes(in our case just one) in n trials is given by the probability mass function:
+
 import random
 import time
 import math
 import threading
+from scipy.stats import poisson
+import numpy as np
+import matplotlib.pyplot as plt
 
 # ***Global Variables***
 coinChoices = ["H", "T"]
 idealFlip = "HHTHTHHHTHHHTHTH"
+numOfFlips = 10000  # We can change this easily depending on how many flips our experiment needs
 flip = ""
 
 counter = 0  # keep track of the iterations to divide by
@@ -74,7 +82,7 @@ if __name__ == "__main__":
 
         print("Actual flip = " + flip + " Ideal flip = " + idealFlip)
         if counter != 0:
-            actualProb = (probability / counter)
+            actualProb = (probability / numOfFlips - 1)
         if flip == idealFlip:
             flag = 0
 
