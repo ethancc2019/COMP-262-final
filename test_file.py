@@ -3,6 +3,7 @@ import sys
 import time
 import math
 import threading
+import numpy
 # from sympy import *import numpy as np
 
 ideal = "HHTHTHHHTHHHTHTH"
@@ -39,7 +40,7 @@ def update_estimate():
 
 
 def flip_add():
-    for j in range(100000):
+    for j in range(90000 / 3):
         flip = flip_n()
         arrayOfSequences.append(flip)
 
@@ -54,11 +55,12 @@ def look_and_count(start, finish):
             n += 1
         if i != 0 and i % numOfFlips == 0:
             probability = (float(y) / i)
-            arrayOfProbability.append(probability)
+
 
         counter += 1
 
-
+def find_sequence():
+    return arrayOfSequences.index(ideal)
 
 
 if __name__ == "__main__":
@@ -81,16 +83,16 @@ if __name__ == "__main__":
     t3.join()
     t4.join()
     t5.join()
-
+    print (find_sequence())
     #look_and_count(0, len(arrayOfSequences))
-    t6 = threading.Thread(target=look_and_count, args=(0, len(arrayOfSequences))) # This thread sorts through the first half of our array
+    t6 = threading.Thread(target=look_and_count, args=(0, len(arrayOfSequences) / 2)) # This thread sorts through the first half of our array
     print("Sorting through the array")
     t6.start()
     t6.join()
 
-
-
-
+    t7 = threading.Thread(target=look_and_count, args=(len(arrayOfSequences) / 2, len(arrayOfSequences)))
+    t7.start()
+    t7.join()
     then = time.time()
 
     print("Number of matches: " + str(y))
