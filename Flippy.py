@@ -34,17 +34,24 @@
 # or openmpi ?
 # https://ipython.org/ipython-doc/3/parallel/parallel_mpi.html
 #
+# Nice references for Pool and Process
+# http://cslocumwx.github.io/blog/2015/02/23/python-multiprocessing/
+# docs.python.org/dev/library/multiprocessing.html
+# https://www.ellicium.com/python-multiprocessing-pool-process/
+#
 
 import random
 import time
 import math
-from multiprocessing.dummy import Pool as ThreadPool
+import multiprocessing as mp  # alias
+
+# from multiprocessing.dummy import Pool as ThreadPool
 
 # initial sequence:
 # HHTHTHHHTHHHTHTH
 
 coinChoices = ["H", "T"]  # choices
-idealFlip = "HHTHTHHH"    # string to match
+idealFlip = "HHT"    # string to match
 flip = ""                 # resets flip
 
 margin_error = 0.1  # accuracy
@@ -53,12 +60,19 @@ probability = 0     # calc. probability
 counter = 0         # iterations
 flag = 1            # exit token
 
+check = math.ceil(pow(2, len(idealFlip))/2)  # used for printing prob
+
 # pool = ThreadPool(4)
 
 
-# flips a coin
+# flips a coin  *NOT USED*
 def flip_coin(coins):
     return str(random.choice(coins))
+
+
+# requests (num) tasks to be completed
+def flip_coin_num(num):
+    return str(random.choice(coinChoices))
 
 
 # theoretical probability
@@ -72,13 +86,9 @@ def empirical_probability(count, num_flips):
     return count / num_flips
 
 
-# make number of threads based on the length of the ideal flip
-def make_threads():
-    pool = ThreadPool(len(idealFlip))
-
-
 # TODO: implement multiprocessing
 if __name__ == "__main__":
+    # print("# cores: %d" % mp.cpu_count())
 
     probability = compute_probability()
     print("\nInitial probability of landing on the sequence: " + str(probability) + "\n")
@@ -86,47 +96,25 @@ if __name__ == "__main__":
     actualProb = 0
     empiricalProb = 0
 
+    tasks = range(len(idealFlip))
+
     while flag != 0:
-        # then = time.clock()
-        for i in range(len(idealFlip)):
-            # Each iteration represents a independent flip of the coin
-            flip += flip_coin(coinChoices)
+        with mp.Pool(processes=4) as pool:
+            temp = pool.map(flip_coin_num, tasks)
+            # add other processes?
+        # handles close / join
 
-        # TESTING
-        # print("Actual flip = " + flip + " Ideal flip = " + idealFlip)
+        flip = "".join(temp)
+        # print(temp)
+        # print(flip)
 
-        # prevent division by zero
         if counter != 0:
-            # actualProb = (counter / len(idealFlip))
             empiricalProb = empirical_probability(num_matches, counter)
-
-        # found a match
         if flip == idealFlip:
-            # now = time.time()
             num_matches += 1
-            print("FOUND ON ITERATION: " + str(counter))
-            actualProb = 0  # reset after found
-
-        # TESTING
-        # actualProb += probability
-        # print("iteration number: " + str(counter))  # + " Probability: " + str(actualProb))
-        # print("calculated probability: " + str(probability))
-        # print("cumulative probability: " + str(actualProb))
-        print("empirical probability:  " + str(empiricalProb))
 
         counter += 1
         flip = ""
 
-        # percent error used for accurate prob. estimate
-        if abs(compute_probability()-empirical_probability(num_matches, counter))/compute_probability() <= margin_error:
-            flag = 0
-            # now = time.clock()
-
-    # results
-    print("\nDONE ON ITERATION:     " + str(counter))
-    print("EMPIRICAL PROBABILITY: " + str(empirical_probability(num_matches, counter)))
-    print("EXPECTED PROBABILITY:  " + str(compute_probability()))
-
-    # diff = now - then
-    # print(str(diff % 60))
-    # print("FOUND ON ITERATION: " + str(counter))
+        if counter % check is 0:
+            print("PROBABILITY: " + str(empiricalProb))
