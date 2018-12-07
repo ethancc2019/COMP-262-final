@@ -40,7 +40,7 @@ def update_estimate():
 
 
 def flip_add():
-    for j in range(90000 / 3):
+    for j in range(1000):
         flip = flip_n()
         arrayOfSequences.append(flip)
 
@@ -73,17 +73,20 @@ if __name__ == "__main__":
     t5 = threading.Thread(target=flip_add())
 
     t1.start()
-    t2.start()
-    t3.start()
-    t4.start()
-    t5.start()
-
     t1.join()
+
+    t2.start()
     t2.join()
+
+    t3.start()
     t3.join()
+
+    t4.start()
     t4.join()
+
+    t5.start()
     t5.join()
-    print (find_sequence())
+    #print (find_sequence())
     #look_and_count(0, len(arrayOfSequences))
     t6 = threading.Thread(target=look_and_count, args=(0, len(arrayOfSequences) / 2)) # This thread sorts through the first half of our array
     print("Sorting through the array")
