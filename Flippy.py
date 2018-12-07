@@ -16,32 +16,18 @@
 # intuition behind coin flipping
 # https://math.stackexchange.com/questions/151262/looking-for-intuition-behind-coin-flipping-pattern-expectation
 
-
-# https://en.wikipedia.org/wiki/Binomial_distribution
-# OMG WE NEED TO USE PROBABILITY MASS FUNCTION WHATTTT
-# Probability mass function --> https://en.wikipedia.org/wiki/Binomial_distribution
-# The probability of getting exactly k successes(in our case just one) in n trials is given by the probability mass function:
-
 import random
 import time
 import math
-import threading
-from scipy.stats import poisson
-import numpy as np
-import matplotlib.pyplot as plt
+from multiprocessing.dummy import Pool as ThreadPool
 
-# ***Global Variables***
 coinChoices = ["H", "T"]
-idealFlip = "HHTHTHHHTHHHTHTH"
-numOfFlips = 10000  # We can change this easily depending on how many flips our experiment needs
-flip = ""
-
-counter = 0  # keep track of the iterations to divide by
-flag = 1  # flag to break the while loop
+# number of flips
+idealFlip = "HHTHTTHT"
+counter = 0
+flag = 1
 probability = 0
-
-numOfHeads = 0
-numOfTails = 0
+flip = ""
 
 
 # pool = ThreadPool(4)
@@ -50,45 +36,37 @@ def flip_coin(coins):
     return str(random.choice(coins))
 
 
-def compute_probability():  # This function assumes that the probability of H or T is 1/2
-    global idealFlip
+def compute_probability():
     size = len(idealFlip)
     return math.pow(0.5, size)
 
 
-def count_occurrence():  # Counts the number of H and T in the sequence
-    global numOfHeads
-    global numOfTails
-    for i in idealFlip:
-        if i == "H":
-            numOfHeads += 1
-        else:
-            numOfTails += 1
-
-
 # make number of threads based on the length of the ideal flip
+def make_threads():
+    pool = ThreadPool(len(idealFlip))
 
 
 if __name__ == "__main__":
-    count_occurrence()
+
+    probability = compute_probability()
     print("Initial probability of landing on the sequence: " + str(probability))
     actualProb = 0
-    probability = compute_probability()
     while flag != 0:
+        # then = time.time()
         for i in range(len(idealFlip)):
             # Each iteration represents a independent flip of the coin
             flip += flip_coin(coinChoices)
 
         print("Actual flip = " + flip + " Ideal flip = " + idealFlip)
         if counter != 0:
-            actualProb = (probability / numOfFlips - 1)
+            actualProb = (probability / counter)
         if flip == idealFlip:
+            # now = time.time()
             flag = 0
 
-        print("Iteration number: " + str(counter) + " Probability on this iteration: " + str(actualProb))
+        print("iteration number: " + str(counter) + " Probability: " + str(actualProb))
 
         counter += 1
-        # reset this string
         flip = ""
 
     # diff = now - then
