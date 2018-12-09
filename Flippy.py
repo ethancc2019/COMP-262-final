@@ -39,6 +39,11 @@
 # docs.python.org/dev/library/multiprocessing.html
 # https://www.ellicium.com/python-multiprocessing-pool-process/
 #
+# Optimization
+# https://stackoverflow.com/questions/5549190/is-shared-readonly-data-copied-to-different-processes-for-multiprocessing/5550156#5550156
+# https://stackoverflow.com/questions/20914828/python-multiprocessing-pool-join-not-waiting-to-go-on
+# https://stackoverflow.com/questions/13672429/python-multiprocessing-for-expensive-operation-with-2d-array
+#
 
 import random
 import time
@@ -57,23 +62,16 @@ flip = ""                         # resets flip
 
 # data = np.empty((10000, 16), dtype=object)      # empty numpy array
 
-data = []  # stores flips
-total_match = [0]
+data = []           # stores flips
+prob_list = []      # testing
 
-"""
-# TESTING
-work1 = ([0], [1], [2])
-work2 = (["A"], ["B"], ["C"], ["B"], ["C"], ["B"], ["C"], ["B"], ["C"], ["B"], ["C"])
-work3 = []
-work4 = (["A", 0], ["B", 1], ["C", 2])
-"""
+quiT = 0            # testing
+c_found = 0         # testing
 
-# margin_error = 0.1  # accuracy *NOT USED*
 num_matches = 0.0   # matched strings
 probability = 0     # calc. probability
 counter = 0         # global iterations
 d_count = 1         # iterates coin flips
-# h_count = 0         # used in handler()
 flag = 1            # exit token
 
 # check = math.ceil(pow(2, len(idealFlip))/2)  # used for printing prob *NOT USED*
@@ -115,17 +113,19 @@ def sys_coin_flip():
 
     # 0 mod (anything) = 0; +1 to d_count and chunk_c
 
-    while d_count % 100001 != 0:  # iterations
+    while d_count % 100001 != 0:  # number of iterations
         chunk = []
-        while chunk_c % 17 != 0:  # coins
+        while chunk_c % 17 != 0:  # number of coins
             chunk.append(random.choice(coinChoices))
             chunk_c += 1
-            # print("C_c: " + str(chunk_c))
         data.append(chunk)
-        # del chunk[:]
+        # del chunk[:] # messes up data
         d_count += 1
         chunk_c = 1
+
     # print("DONE FLIPPING")
+    #
+    # ex. [[HHTHTHHHTHHHTHTH], [THHHTHTHHHTHTHHH], [THTHHTHHTHHHHTHH], ...]
 
 
 """
@@ -144,18 +144,14 @@ def sys_coin_flip():
 """
 
 
+# multiple cores handle data[[]];
+# break into strings to compare
 def handler(a):
-    global flip, num_matches, counter, total_match
-
-    # cell = args[h_count]
-    # cell.append(args[h_count])
-
-    # for i in cell:
-    #    flip += cell[i]
-    # flip += "".join(cell)
+    global flip, num_matches, counter
 
     # print("%s%s" % (a[0], a[1]))
 
+    # coin flip sequence
     flip += (a[0] + a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7] +
              a[8] + a[9] + a[10] + a[11] + a[12] + a[13] + a[14] + a[15])
 
@@ -168,10 +164,12 @@ def handler(a):
 
     print("COUNTER: " + str(counter) + "  NUM MATCHES: " + str(num_matches))
 
-    # h_count += 1
-    # print(flip + "\n")
-
+    # ready a new flipping
     flip = ""
+
+    # still includes dupes
+    if counter % mp.cpu_count() == 0 and num_matches != 0:
+        return num_matches
 
 
 # theoretical probability
@@ -194,12 +192,8 @@ if __name__ == "__main__":
 
     actualProb = 0
     empiricalProb = 0
-    # tasks = range(len(idealFlip))
-    # print(*data, sep=" ")
 
     sys_coin_flip()
-
-    # print(*data, sep=" ")
 
     while flag != 0:
         # with mp.Pool(processes=4) as pool:
@@ -207,8 +201,8 @@ if __name__ == "__main__":
         #    add other processes?
         # handles close / join itself
 
-        pool = mp.Pool(1)  # mp.cpu_count()
-        temp = pool.map(handler, data)
+        pool = mp.Pool(mp.cpu_count())
+        results = pool.map(handler, data)
 
         pool.close()
         pool.join()
@@ -219,8 +213,24 @@ if __name__ == "__main__":
 
         counter += (d_count - 1) * 16  # 16 coins in sequence
 
-        if counter != 0:
-            empiricalProb = empirical_probability(num_matches, counter)
+        print("\nRESULTS: " + str(results))
+
+        results = filter(None, results)
+
+        print("remove NONE: " + str(results) + "\n")
+        for i in results:
+            c_found += i
+
+        print("CALC_PROB: " + str(c_found/counter))
+
+        # if counter != 0:
+        #    empiricalProb = empirical_probability(num_matches, counter)
+
+        # new_prob = new_prob / len(prob_list)
+
+        print("MATCHES FOUND: " + str(c_found))
+
+        # *old method of checking*
         # if flip == idealFlip:
         #    num_matches += 1
 
@@ -229,6 +239,15 @@ if __name__ == "__main__":
 
         # if counter % check is 0:
         # print("d_c: " + str(d_count) + " f: " + str(total_match[0]))
-        print("  COUNTER: " + str(counter) + "MATCHES: " + str(num_matches))
-        print("PROBABILITY: " + str(empiricalProb))
+
+        # NEED TO UPDATE
+        print("COUNTER: " + str(counter))  # + " MATCHES: " + str(num_matches))
+        # print("PROBABILITY: " + str(empiricalProb))
+        break  # single iter
+
         sys_coin_flip()
+
+        # TESTING (n iterations)
+        # quiT += 1
+        # if quiT == 5:
+        #    break
