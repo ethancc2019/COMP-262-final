@@ -46,20 +46,19 @@ import math
 import multiprocessing as mp  # alias
 import numpy as np
 
-# import Cython as Cy
-
 # from multiprocessing.dummy import Pool as ThreadPool
 
 # initial sequence:
 # HHTHTHHHTHHHTHTH
 
-coinChoices = ("H", "T")        # choices
+coinChoices = ("H", "T")          # choices
 idealFlip = "HHTHTHHHTHHHTHTH"    # string to match
 flip = ""                         # resets flip
 
 # data = np.empty((10000, 16), dtype=object)      # empty numpy array
-data = []
-# chunk = []
+
+data = []  # stores flips
+total_match = [0]
 
 """
 # TESTING
@@ -78,7 +77,7 @@ d_count = 1         # iterates coin flips
 flag = 1            # exit token
 
 # check = math.ceil(pow(2, len(idealFlip))/2)  # used for printing prob *NOT USED*
-check = 10
+# check = 10
 
 # pool = ThreadPool(4)
 
@@ -114,14 +113,15 @@ def sys_coin_flip():
     global data, d_count
     chunk_c = 1
 
-    while d_count % 100001 != 0:
+    # 0 mod (anything) = 0; +1 to d_count and chunk_c
+
+    while d_count % 100001 != 0:  # iterations
         chunk = []
-        while chunk_c % 17 != 0:
+        while chunk_c % 17 != 0:  # coins
             chunk.append(random.choice(coinChoices))
             chunk_c += 1
             # print("C_c: " + str(chunk_c))
         data.append(chunk)
-        # data.append(random.choice(coinChoices))
         # del chunk[:]
         d_count += 1
         chunk_c = 1
@@ -145,7 +145,7 @@ def sys_coin_flip():
 
 
 def handler(a):
-    global flip, num_matches, counter
+    global flip, num_matches, counter, total_match
 
     # cell = args[h_count]
     # cell.append(args[h_count])
@@ -156,23 +156,21 @@ def handler(a):
 
     # print("%s%s" % (a[0], a[1]))
 
-    counter += 1
-
     flip += (a[0] + a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7] +
              a[8] + a[9] + a[10] + a[11] + a[12] + a[13] + a[14] + a[15])
 
     # print(flip)
+
+    counter += 1
 
     if flip == idealFlip:
         num_matches += 1
 
     print("COUNTER: " + str(counter) + "  NUM MATCHES: " + str(num_matches))
 
-    # print("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s" % (a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13], a[14], a[15]))
-    # print("%s %s %s %s" % (args[4], args[5], args[6], args[7]))
-
     # h_count += 1
     # print(flip + "\n")
+
     flip = ""
 
 
@@ -203,8 +201,6 @@ if __name__ == "__main__":
 
     # print(*data, sep=" ")
 
-    # fill_er_up(work3)
-
     while flag != 0:
         # with mp.Pool(processes=4) as pool:
         #    temp = pool.map(flip_coin_num, tasks)
@@ -221,6 +217,8 @@ if __name__ == "__main__":
         # print(temp)
         # print(flip)
 
+        counter += (d_count - 1) * 16  # 16 coins in sequence
+
         if counter != 0:
             empiricalProb = empirical_probability(num_matches, counter)
         # if flip == idealFlip:
@@ -230,6 +228,7 @@ if __name__ == "__main__":
         # flip = ""
 
         # if counter % check is 0:
+        # print("d_c: " + str(d_count) + " f: " + str(total_match[0]))
+        print("  COUNTER: " + str(counter) + "MATCHES: " + str(num_matches))
         print("PROBABILITY: " + str(empiricalProb))
-        break
         sys_coin_flip()
