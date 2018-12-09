@@ -48,6 +48,7 @@
 import random
 import time
 import math
+import ctypes
 import multiprocessing as mp  # alias
 import numpy as np
 
@@ -63,15 +64,19 @@ flip = ""                         # resets flip
 # data = np.empty((10000, 16), dtype=object)      # empty numpy array
 
 data = []           # stores flips
-prob_list = []      # testing
+
+# shared_array = mp.Array(ctypes.c_double, 100000*16)
+# s_array = np.ctypeslib.as_array(shared_array.get_obj)
 
 quiT = 0            # testing
-c_found = 0         # testing
+c_found = 0         # match finder  oooh
+is_match = 0        # testing
 
 num_matches = 0.0   # matched strings
 probability = 0     # calc. probability
 counter = 0         # global iterations
 d_count = 1         # iterates coin flips
+true_d_cnt = 0      # fixes count issue
 flag = 1            # exit token
 
 # check = math.ceil(pow(2, len(idealFlip))/2)  # used for printing prob *NOT USED*
@@ -108,8 +113,9 @@ def flip_coin_num(processes=helper_func(lambda p1,p2,p3,p4:(p1,p2,p3,p4))):
 # Flip coins initially
 # 2D array; (however many) X (16) flips
 def sys_coin_flip():
-    global data, d_count
+    global data, d_count, true_d_cnt
     chunk_c = 1
+    del data[:]
 
     # 0 mod (anything) = 0; +1 to d_count and chunk_c
 
@@ -119,9 +125,13 @@ def sys_coin_flip():
             chunk.append(random.choice(coinChoices))
             chunk_c += 1
         data.append(chunk)
+        # shared_array.append(chunk)
         # del chunk[:] # messes up data
         d_count += 1
         chunk_c = 1
+
+    true_d_cnt += 100000
+    d_count += 1  # continue flipping in next iter
 
     # print("DONE FLIPPING")
     #
@@ -147,29 +157,34 @@ def sys_coin_flip():
 # multiple cores handle data[[]];
 # break into strings to compare
 def handler(a):
-    global flip, num_matches, counter
+    global flip, counter, is_match
 
-    # print("%s%s" % (a[0], a[1]))
+    is_match = 0  # count every match individually
 
     # coin flip sequence
     flip += (a[0] + a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7] +
              a[8] + a[9] + a[10] + a[11] + a[12] + a[13] + a[14] + a[15])
 
-    # print(flip)
-
     counter += 1
 
-    if flip == idealFlip:
-        num_matches += 1
+    # print(flip)
+    # print("COUNTER: " + str(counter) + "  NUM MATCHES: " + str(num_matches))
 
-    print("COUNTER: " + str(counter) + "  NUM MATCHES: " + str(num_matches))
+    if flip == idealFlip:
+        flip = ""
+        return 1
+        # is_match += 1
+    else:
+        flip = ""
+        return 0
 
     # ready a new flipping
-    flip = ""
+    # flip = ""
 
-    # still includes dupes
-    if counter % mp.cpu_count() == 0 and num_matches != 0:
-        return num_matches
+    # still includes dupes?
+    # if counter % mp.cpu_count() == 0 and is_match != 0:
+    # if is_match != 0:
+    #    return is_match
 
 
 # theoretical probability
@@ -181,6 +196,13 @@ def compute_probability():
 # actual probability
 def empirical_probability(count, num_flips):
     return count / num_flips
+
+
+def remove_zero(unknown):
+    if unknown is 1:
+        return True
+    else:
+        return False
 
 
 # TODO: implement multiprocessing
@@ -196,13 +218,12 @@ if __name__ == "__main__":
     sys_coin_flip()
 
     while flag != 0:
-        # with mp.Pool(processes=4) as pool:
-        #    temp = pool.map(flip_coin_num, tasks)
-        #    add other processes?
-        # handles close / join itself
+        # with mp.Pool(processes=mp.cpu_count()) as pool:
+        #    results = pool.map(handler, data)
+            # handles close / join itself
 
         pool = mp.Pool(mp.cpu_count())
-        results = pool.map(handler, data)
+        results = pool.map(handler, data)  # shared_array ?
 
         pool.close()
         pool.join()
@@ -211,39 +232,33 @@ if __name__ == "__main__":
         # print(temp)
         # print(flip)
 
-        counter += (d_count - 1) * 16  # 16 coins in sequence
+        counter += true_d_cnt * 16  # 16 coins in sequence
 
-        print("\nRESULTS: " + str(results))
+        # print("\nRESULTS: " + str(results))
 
-        results = filter(None, results)
+        # results = filter(None, results)
+        # results = filter(remove_zero, results)
+        results = filter(lambda x: x == 1, results)
 
-        print("remove NONE: " + str(results) + "\n")
+        # print("REMOVE 0: ")
+        # print(*results, sep=" ")
+
         for i in results:
             c_found += i
 
-        print("CALC_PROB: " + str(c_found/counter))
-
-        # if counter != 0:
-        #    empiricalProb = empirical_probability(num_matches, counter)
-
-        # new_prob = new_prob / len(prob_list)
+        num_matches += c_found
 
         print("MATCHES FOUND: " + str(c_found))
-
-        # *old method of checking*
-        # if flip == idealFlip:
-        #    num_matches += 1
-
-        # counter += 1
-        # flip = ""
-
-        # if counter % check is 0:
-        # print("d_c: " + str(d_count) + " f: " + str(total_match[0]))
+        print("TOTAL MATCHES FOUND: " + str(num_matches))
+        print("CALC_PROB: " + str(num_matches/counter))
 
         # NEED TO UPDATE
-        print("COUNTER: " + str(counter))  # + " MATCHES: " + str(num_matches))
+        print("FLIPS: " + str(counter) + "\n")  # + " MATCHES: " + str(num_matches))
         # print("PROBABILITY: " + str(empiricalProb))
-        break  # single iter
+        # single iter
+
+        # results = None
+        c_found = 0
 
         sys_coin_flip()
 
