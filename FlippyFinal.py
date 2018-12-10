@@ -7,22 +7,34 @@
 
 # Intuition behind coin flipping
 # https://math.stackexchange.com/questions/151262/looking-for-intuition-behind-coin-flipping-pattern-expectation
-#
+
 # Nice references for Pool and Process
 # http://cslocumwx.github.io/blog/2015/02/23/python-multiprocessing/
 # docs.python.org/dev/library/multiprocessing.html
 # https://www.ellicium.com/python-multiprocessing-pool-process/
-#
+
 # Optimization
 # https://stackoverflow.com/questions/5549190/is-shared-readonly-data-copied-to-different-processes-for-multiprocessing/5550156#5550156
 # https://stackoverflow.com/questions/20914828/python-multiprocessing-pool-join-not-waiting-to-go-on
 # https://stackoverflow.com/questions/13672429/python-multiprocessing-for-expensive-operation-with-2d-array
-#
+
 """
 """
 Name: Tai Alvitre, Ethan Collins
 Class: COMP 262
 Project: Final Project
+Fall 2018
+"""
+"""
+Summary:
+Initially, program fills 2D array with random coin flips.
+Flips are stored in a 100,000 by 16 list, where [x][0] thru [x][15] holds one sequence of coins.
+Program goes into a continuous loop where:
+  ...pool is created with num workers depending on num cores.
+  ...workers process data[[]] into managable sizes 
+  ...workers compare flips with idealFlip string
+  ...analytics generated when work on data[[]] complete
+  ...required data reset and data[[]] is filled with new random data
 """
 
 import random
@@ -40,7 +52,7 @@ flip = ""  # resets flip
 
 data = []  # stores flips
 
-quiT = 0  # testing
+# quiT = 0  # testing
 c_found = 0  # match finder oooooohhhh ;)
 is_match = 0  # testing
 
@@ -51,13 +63,6 @@ d_count = 1  # iterates coin flips
 true_d_cnt = 0  # fixes count issue
 flag = 1  # exit token
 
-"""
-# TESTING
-def fill_er_up(get_in_there):
-    get_in_there.append(["A"])
-    get_in_there.append(["B"])
-    get_in_there.append(random.choice(coinChoices))
-"""
 
 """
  Flip coins initially
@@ -65,29 +70,30 @@ def fill_er_up(get_in_there):
 """
 def sys_coin_flip():
     global data, d_count, true_d_cnt
-    chunk_c = 1
+    chunk_c = 1  # counter for num coins
     del data[:]  # Clears our array holding our sequences
 
     # 0 mod (anything) = 0; +1 to d_count and chunk_c
 
-    while d_count % 100001 != 0:  # number of iterations
-        chunk = []
-        while chunk_c % 17 != 0:  # number of coins
-            chunk.append(random.choice(coinChoices))
+    while d_count % 100001 != 0:  # is number of iterations
+        chunk = []  # clear chunk
+        while chunk_c % 17 != 0:  # is number of coins
+            chunk.append(random.choice(coinChoices))  # FLIP; heads or tails?
             chunk_c += 1
         data.append(chunk)  # Adds our random coin flips to our data list
 
         d_count += 1
         chunk_c = 1
 
-    true_d_cnt += 100000
-    d_count += 1  # continue flipping in next iter
+    true_d_cnt += 100000  # had problem using d_count; create new var
+    d_count += 1  # continue flipping in next iter; (x mod x = 0)
 
+    # How array will look:
     # ex. [[HHTHTHHHTHHHTHTH], [THHHTHTHHHTHTHHH], [THTHHTHHTHHHHTHH], ...]
 
 
 """
-    Multiple cores handle  or 2-D array data[[]];
+    Multiple cores handle our 2-D array data[[]];
     break into strings to compare
 """
 def handler(a):
@@ -155,9 +161,9 @@ if __name__ == "__main__":
         results = pool.map(handler, data)
 
         pool.close()  # Close the thread pool
-        pool.join()  # This makes sure that every thread finishes it job before returning
+        pool.join()  # This makes sure that every thread finishes its job before returning
 
-        counter += true_d_cnt * 16  # 16 coins in sequence
+        counter += true_d_cnt * 16  # (num. sequences) * (16 coins in sequence)
 
         """
         After we have our collection of 1s and 0s all we really want is the number of matches(number of 1s in result)
